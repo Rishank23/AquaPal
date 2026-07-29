@@ -30,8 +30,17 @@ public interface WaterDao {
     @Query("select min(date) from waterusage")
     long getFirstDate();
 
+    @Query("select * from WaterUsage order by date DESC")
+    List<WaterUsage> getAllWaterUsageOnce();
+
+    @Query("select * from WaterUsage where date between :startDate and :endDate order by date ASC")
+    List<WaterUsage> getUsageInRange(long startDate, long endDate);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertUsage(WaterUsage waterUsage);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertAll(List<WaterUsage> waterUsages);
 
     @Delete
     void removeUsage(WaterUsage waterUsage);

@@ -25,6 +25,7 @@ import com.example.aquapal.waterDb.AppExecutors;
 import com.example.aquapal.waterDb.UsageViewModel;
 import com.example.aquapal.waterDb.WaterDatabaseHelper;
 import com.example.aquapal.waterDb.WaterUsage;
+import com.example.aquapal.widget.WaterUsageWidgetProvider;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -81,16 +82,24 @@ public class AddExpenseActivity extends AppCompatActivity {
 
         saveUsageBtn.setOnClickListener(view -> {
 
-            if (quantityTextInputEditText.getText().toString().isEmpty()
-                    || descriptionTextInputEditText.getText().toString().isEmpty()) {
+            float parsedQuantity = 0f;
+            boolean quantityValid = !quantityTextInputEditText.getText().toString().isEmpty();
+            if (quantityValid) {
+                parsedQuantity = Float.parseFloat(quantityTextInputEditText.getText().toString());
+                quantityValid = parsedQuantity > 0;
+            }
+
+            if (!quantityValid || descriptionTextInputEditText.getText().toString().isEmpty()) {
 
                 if (quantityTextInputEditText.getText().toString().isEmpty())
                     quantityTextInputEditText.setError("This field cannot be empty");
+                else if (!quantityValid)
+                    quantityTextInputEditText.setError("Quantity must be greater than 0");
                 if (descriptionTextInputEditText.getText().toString().isEmpty())
                     descriptionTextInputEditText.setError("Please write some description");
 
             } else {
-                quantity = Float.parseFloat(quantityTextInputEditText.getText().toString());
+                quantity = parsedQuantity;
                 description = descriptionTextInputEditText.getText().toString();
                 dateOfExpense = myCalendar.getTime();
 
@@ -103,31 +112,33 @@ public class AddExpenseActivity extends AppCompatActivity {
                         dateOfExpense
                 );
 
+                View currentFocus = getCurrentFocus();
+                InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (currentFocus != null && inputManager != null) {
+                    inputManager.hideSoftInputFromWindow(currentFocus.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+
                 if(intentFrom.equals(Constants.addUsageString)){
                     AppExecutors.getInstance().diskIO().execute(new Runnable() {
                         @Override
                         public void run() {
                             waterDatabaseHelper.waterDao().insertUsage(mWaterUsage);
+                            WaterUsageWidgetProvider.updateAllWidgets(getApplicationContext());
                         }
                     });
 
-                    InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-
-                    Snackbar.make(getCurrentFocus(),"Added",Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(saveUsageBtn,"Added",Snackbar.LENGTH_LONG).show();
                 }else{
                     mWaterUsage.setId(transactionid);
                     AppExecutors.getInstance().diskIO().execute(new Runnable() {
                         @Override
                         public void run() {
                             waterDatabaseHelper.waterDao().updateUsage(mWaterUsage);
+                            WaterUsageWidgetProvider.updateAllWidgets(getApplicationContext());
                         }
                     });
 
-                    InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-
-                    Snackbar.make(getCurrentFocus(),"Updated",Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(saveUsageBtn,"Updated",Snackbar.LENGTH_LONG).show();
                 }
 
                 new Handler().postDelayed(new Runnable() {

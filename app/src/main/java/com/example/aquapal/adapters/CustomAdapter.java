@@ -2,13 +2,13 @@ package com.example.aquapal.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.aquapal.R;
@@ -40,10 +40,14 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.categoryTextViewrv.setText(waterUsages.get(position).getCategory());
+        String category = waterUsages.get(position).getCategory();
+        holder.categoryTextViewrv.setText(category);
 
-        holder.quantityTextViewrv.setText(String.valueOf(waterUsages.get(position).getQuantity()));
-        holder.quantityTextViewrv.setTextColor(Color.parseColor("#ff5722"));
+        holder.quantityTextViewrv.setText(String.format("%s L", waterUsages.get(position).getQuantity()));
+
+        int color = ContextCompat.getColor(context, Constants.colorForCategory(category));
+        holder.quantityTextViewrv.setTextColor(color);
+        holder.categoryColorBar.setBackgroundColor(color);
 
         SimpleDateFormat sdf=new SimpleDateFormat("dd-MM-yyyy");
         String dateToBeSet=sdf.format(waterUsages.get(position).getDate());
@@ -70,6 +74,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
         TextView quantityTextViewrv;
         TextView descriptionTextViewrv;
         TextView dateTextViewrv;
+        View categoryColorBar;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -78,6 +83,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
             quantityTextViewrv = itemView.findViewById(R.id.quantityTextViewrv);
             descriptionTextViewrv = itemView.findViewById(R.id.descriptionTextViewrv);
             dateTextViewrv = itemView.findViewById(R.id.dateTextViewrv);
+            categoryColorBar = itemView.findViewById(R.id.categoryColorBar);
 
             appDatabase = WaterDatabaseHelper.getDb(context);
 

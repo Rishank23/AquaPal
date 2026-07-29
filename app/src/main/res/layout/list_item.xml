@@ -8,12 +8,13 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="2dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginStart="2dp"
-        android:layout_marginTop="2dp"
-        app:cardCornerRadius="6dp"
-        android:elevation="7dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        app:cardBackgroundColor="@color/cardBackground"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -23,81 +24,75 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp">
+            android:layout_height="wrap_content">
+
+            <View
+                android:id="@+id/categoryColorBar"
+                android:layout_width="6dp"
+                android:layout_height="0dp"
+                android:background="@color/categoryDrinking"
+                android:importantForAccessibility="no"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/categoryTextViewrv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Drinking"
+                android:textColor="@color/waterTextPrimary"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toStartOf="@id/quantityTextViewrv"
+                app:layout_constraintStart_toEndOf="@id/categoryColorBar"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/descriptionTextViewrv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="sans-serif-condensed-light"
+                android:text="Dominos"
+                android:textColor="@color/waterTextSecondary"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toStartOf="@id/quantityTextViewrv"
+                app:layout_constraintStart_toEndOf="@id/categoryColorBar"
+                app:layout_constraintTop_toBottomOf="@id/categoryTextViewrv" />
+
+            <TextView
+                android:id="@+id/dateTextViewrv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="8dp"
+                android:text="14/09/2018"
+                android:textColor="@color/waterTextSecondary"
+                android:textSize="11sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/quantityTextViewrv"
+                app:layout_constraintStart_toEndOf="@id/categoryColorBar"
+                app:layout_constraintTop_toBottomOf="@id/descriptionTextViewrv" />
 
             <TextView
                 android:id="@+id/quantityTextViewrv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:padding="2dp"
-                android:text="-300"
-                android:textSize="28sp"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="300 L"
+                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.956"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.173" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0">
-
-
-                <TextView
-                    android:id="@+id/categoryTextViewrv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="2dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="2dp"
-                    android:padding="2dp"
-                    android:text="Food"
-                    android:textColor="#000000"
-                    android:textSize="20sp" />
-
-
-                <TextView
-                    android:id="@+id/dateTextViewrv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginStart="11dp"
-                    android:padding="2dp"
-                    android:text="14/09/2018"
-                    android:textSize="12sp"
-                     />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/descriptionTextViewrv"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="3dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="11dp"
-                android:layout_marginTop="60dp"
-                android:fontFamily="sans-serif-condensed-light"
-                android:padding="4dp"
-                android:text="Dominos"
-                android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -4,6 +4,11 @@
     <string name="tab_text_2">Tab 2</string>
     <string name="tab_text_3">Tab 3</string>
     <string name="action_settings">Settings</string>
+    <string name="action_export">Export CSV</string>
+    <string name="action_import">Import CSV</string>
+    <string name="add_water_usage">Add water usage</string>
+    <string name="set_daily_goal">Set daily water goal</string>
+    <string name="action_reminder">Daily Reminder</string>
     <string name="section_format">Hello World from section: %1$d</string>
 
     <!-- TODO: Remove or change this placeholder text -->
@@ -15,5 +20,18 @@
         <item>This Week</item>
         <item>This Month</item>
 
+    </string-array>
+    <string-array name="trend_range_array">
+        <item>Last 7 Days</item>
+        <item>Last 6 Months</item>
+    </string-array>
+    <string-array name="category_filter_array">
+        <item>All Categories</item>
+        <item>Drinking</item>
+        <item>Cooking</item>
+        <item>Cleaning/Washing</item>
+        <item>Plants</item>
+        <item>Bathing</item>
+        <item>Others</item>
     </string-array>
 </resources>

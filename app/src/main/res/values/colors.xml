@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#aeea00</color>
-    <color name="colorPrimaryDark">#79b700</color>
-    <color name="colorAccent">#ff5722</color>
+    <color name="colorPrimary">#0288D1</color>
+    <color name="colorPrimaryDark">#01579B</color>
+    <color name="colorAccent">#00BFA5</color>
+
+    <color name="waterLight">#B3E5FC</color>
+    <color name="waterSurface">#F1F9FF</color>
+    <color name="waterTextPrimary">#0D3B54</color>
+    <color name="waterTextSecondary">#5A7A8A</color>
+    <color name="cardBackground">#FFFFFF</color>
+    <color name="chartLabelColor">#37474F</color>
+
+    <color name="categoryDrinking">#0288D1</color>
+    <color name="categoryCooking">#00897B</color>
+    <color name="categoryCleaning">#7CB342</color>
+    <color name="categoryPlants">#43A047</color>
+    <color name="categoryBathing">#5C6BC0</color>
+    <color name="categoryOthers">#8D6E63</color>
+
+    <color name="goalOnTrack">#00BFA5</color>
+    <color name="goalOverBudget">#EF5350</color>
 </resources>

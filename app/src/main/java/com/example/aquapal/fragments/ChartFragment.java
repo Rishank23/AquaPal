@@ -2,6 +2,8 @@ package com.example.aquapal.fragments;
 
 import static com.example.aquapal.activities.MainActivity.fab;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,9 +17,12 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.aquapal.R;
+import com.example.aquapal.utils.Constants;
+import com.example.aquapal.utils.DateRangeUtil;
 import com.example.aquapal.utils.UsageList;
 import com.example.aquapal.waterDb.AppExecutors;
 import com.example.aquapal.waterDb.WaterDatabaseHelper;
@@ -27,7 +32,6 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -46,6 +50,9 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
 
     private TextView usageTv;
     private TextView dateTv;
+    private TextView costTv;
+    private SharedPreferences prefs;
+    private float lastTotalLitres = 0f;
 
     private float balanceAmount;
     private float drinkingUsage, cookingUsage, cleaningUsage, plantsUsage, bathingUsage, othersUsage;
@@ -67,6 +74,9 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
         usageTv = view.findViewById(R.id.totalUsageTextView);
 
         dateTv = view.findViewById(R.id.dateTextView);
+        costTv = view.findViewById(R.id.costTextView);
+        prefs = requireContext().getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
+        costTv.setOnClickListener(v -> showSetCostDialog());
         usageList = new ArrayList<>();
         getAllBalanceAmount();
         setupPieChart();
@@ -129,39 +139,40 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
                  usageList.add(new UsageList("Bathing", bathingUsage));
              if(othersUsage !=0 )
                  usageList.add(new UsageList("Others", othersUsage));
+
+                // Update the chart on the main thread only after the disk read above
+                // has actually finished, otherwise the pie chart can render stale/empty data.
+                AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        List<PieEntry> pieEntries = new ArrayList<>();
+                        List<Integer> pieColors = new ArrayList<>();
+                        for(int i = 0 ; i <usageList.size(); i++){
+                            pieEntries.add(new PieEntry(usageList.get(i).getQuantity(), usageList.get(i).getCategory()));
+                            pieColors.add(ContextCompat.getColor(getContext(), Constants.colorForCategory(usageList.get(i).getCategory())));
+                        }
+                        pieChart.setVisibility(View.VISIBLE);
+                        PieDataSet dataSet = new PieDataSet(pieEntries,null);
+                        dataSet.setColors(pieColors);
+                        PieData pieData = new PieData(dataSet);
+
+                        pieData.setValueTextSize(16);
+                        pieData.setValueTextColor(Color.WHITE);
+                        pieData.setValueFormatter(new PercentFormatter());
+                        pieChart.setUsePercentValues(true);
+                        pieChart.setData(pieData);
+                        pieChart.animateY(1000);
+                        pieChart.invalidate();
+
+                        pieChart.getDescription().setText("");
+                        Legend l=pieChart.getLegend();
+                        l.setPosition(Legend.LegendPosition.LEFT_OF_CHART);
+                        l.setTextColor(ContextCompat.getColor(getContext(), R.color.chartLabelColor));
+                    }
+                });
             }
         });
-
-        AppExecutors.getInstance().mainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-
-                List<PieEntry> pieEntries = new ArrayList<>();
-                for(int i = 0 ; i <usageList.size(); i++){
-                    pieEntries.add(new PieEntry(usageList.get(i).getQuantity(), usageList.get(i).getCategory()));
-                }
-                pieChart.setVisibility(View.VISIBLE);
-                PieDataSet dataSet = new PieDataSet(pieEntries,null);
-                dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
-                PieData pieData = new PieData(dataSet);
-
-                pieData.setValueTextSize(16);
-                pieData.setValueTextColor(Color.WHITE);
-                pieData.setValueFormatter(new PercentFormatter());
-                pieChart.setUsePercentValues(true);
-                pieChart.setData(pieData);
-                pieChart.animateY(1000);
-                pieChart.invalidate();
-
-                pieChart.getDescription().setText("");
-                Legend l=pieChart.getLegend();
-                l.setPosition(Legend.LegendPosition.LEFT_OF_CHART);
-                //l.setXEntrySpace(8f);
-                //l.setYEntrySpace(1f);
-                //l.setYOffset(0f);
-            }
-        });
-
     }
 
     @Override
@@ -223,8 +234,7 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
 
         calendar.add(Calendar.DATE, 6);
         endDate = df.format(calendar.getTime());
-        Date eDate = df.parse(endDate);
-        final long edate = eDate.getTime();
+        final long edate = DateRangeUtil.endOfDay(df.parse(endDate));
 
         drinkingUsage = mAppDb.waterDao().getSumQuantityByCategoryCustomDate("Drinking", sdate, edate);
         cookingUsage = mAppDb.waterDao().getSumQuantityByCategoryCustomDate("Cooking", sdate, edate);
@@ -249,8 +259,7 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
 
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
         endDate = df.format(calendar.getTime());
-        Date eDate=df.parse(endDate);
-        final long edate=eDate.getTime();
+        final long edate = DateRangeUtil.endOfDay(df.parse(endDate));
 
         drinkingUsage = mAppDb.waterDao().getSumQuantityByCategoryCustomDate("Drinking", sdate, edate);
         cookingUsage = mAppDb.waterDao().getSumQuantityByCategoryCustomDate("Cooking", sdate, edate);
@@ -262,33 +271,28 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
 
     private void getAllBalanceAmount(){
 
-        //get date when first transaction date and todays date
+        //get date of first transaction and today's date, then compute the total,
+        //all on the disk IO thread so the UI update below always sees fresh values.
        AppExecutors.getInstance().diskIO().execute(new Runnable() {
            @Override
            public void run() {
-               firstDate=mAppDb.waterDao().getFirstDate();
+               firstDate = mAppDb.waterDao().getFirstDate();
+               balanceAmount = mAppDb.waterDao().getSumAllTimeWaterUsage();
+
+               AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                   @Override
+                   public void run() {
+                       SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                       String first = df.format(new Date(firstDate));
+                       Date today = Calendar.getInstance().getTime();
+                       String todaysDate = df.format(today);
+                       dateTv.setText(first + " - " + todaysDate);
+                       usageTv.setText(balanceAmount + " Litres");
+                       updateCostDisplay(balanceAmount);
+                   }
+               });
            }
        });
-
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-        String first = df.format(new Date(firstDate));
-        Date today=Calendar.getInstance().getTime();
-        String todaysDate=df.format(today);
-        String Date=first+" - "+todaysDate;
-        dateTv.setText(Date);
-
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                balanceAmount = mAppDb.waterDao().getSumAllTimeWaterUsage();
-            }
-        });
-        AppExecutors.getInstance().mainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                usageTv.setText(balanceAmount+" Litres");
-            }
-        });
     }
 
     private void getWeekBalanceAmount() throws ParseException {
@@ -305,8 +309,7 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
 
         calendar.add(Calendar.DATE, 6);
         endDate = df.format(calendar.getTime());
-        Date eDate=df.parse(endDate);
-        final long edate=eDate.getTime();
+        final long edate = DateRangeUtil.endOfDay(df.parse(endDate));
 
         String dateString = startDate + " - " + endDate;
         dateTv.setText(dateString);
@@ -315,12 +318,13 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
             @Override
             public void run() {
                 balanceAmount = mAppDb.waterDao().getQuantityByCustomDates(sdate, edate);
-            }
-        });
-        AppExecutors.getInstance().mainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                usageTv.setText(balanceAmount+" Litres");
+                AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        usageTv.setText(balanceAmount+" Litres");
+                        updateCostDisplay(balanceAmount);
+                    }
+                });
             }
         });
     }
@@ -339,8 +343,7 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
 
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
         endDate = df.format(calendar.getTime());
-        Date eDate=df.parse(endDate);
-        final long edate=eDate.getTime();
+        final long edate = DateRangeUtil.endOfDay(df.parse(endDate));
 
         String dateString = startDate + " - " + endDate;
         dateTv.setText(dateString);
@@ -349,13 +352,48 @@ public class ChartFragment extends Fragment implements AdapterView.OnItemSelecte
             @Override
             public void run() {
                 balanceAmount = mAppDb.waterDao().getQuantityByCustomDates(sdate, edate);
+                AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        usageTv.setText(balanceAmount+" Litres");
+                        updateCostDisplay(balanceAmount);
+                    }
+                });
             }
         });
-        AppExecutors.getInstance().mainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                usageTv.setText(balanceAmount+" Litres");
-            }
-        });
+    }
+
+    private void updateCostDisplay(float totalLitres) {
+        if (costTv == null) return;
+        lastTotalLitres = totalLitres;
+        float rate = prefs.getFloat(Constants.KEY_COST_PER_LITRE, 0f);
+        if (rate > 0) {
+            costTv.setText(String.format(Locale.getDefault(), "Est. Cost: %.2f (tap to edit rate)", totalLitres * rate));
+        } else {
+            costTv.setText("Tap to set water cost rate");
+        }
+    }
+
+    private void showSetCostDialog() {
+        final android.widget.EditText input = new android.widget.EditText(getContext());
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setText(String.valueOf(prefs.getFloat(Constants.KEY_COST_PER_LITRE, 0f)));
+        input.setSelection(input.getText().length());
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("Cost per litre")
+                .setView(input)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    try {
+                        float rate = Float.parseFloat(input.getText().toString());
+                        if (rate >= 0) {
+                            prefs.edit().putFloat(Constants.KEY_COST_PER_LITRE, rate).apply();
+                            updateCostDisplay(lastTotalLitres);
+                        }
+                    } catch (NumberFormatException ignored) {
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }
